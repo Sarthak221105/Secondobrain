@@ -1,0 +1,110 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  GCP_REGION: us-central1
+  AR_REPO: enterprise-search
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/requirements.txt
+      - name: Install deps
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Run unit tests
+        working-directory: backend
+        run: pytest -q
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install deps
+        working-directory: frontend
+        run: npm ci || npm install
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  terraform-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+      - name: fmt
+        working-directory: infrastructure
+        run: terraform fmt -check -recursive
+      - name: init
+        working-directory: infrastructure
+        run: terraform init -backend=false
+      - name: validate
+        working-directory: infrastructure
+        run: terraform validate
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [backend-test, frontend-test, terraform-check]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+      - name: Build & push backend
+        run: |
+          IMG="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ github.sha }}"
+          docker build -t "$IMG" backend
+          docker push "$IMG"
+          echo "BACKEND_IMG=$IMG" >> "$GITHUB_ENV"
+      - name: Build & push frontend
+        run: |
+          IMG="${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ github.sha }}"
+          docker build -t "$IMG" frontend
+          docker push "$IMG"
+          echo "FRONTEND_IMG=$IMG" >> "$GITHUB_ENV"
+      - name: Deploy backend (Cloud Run, internal + IAP)
+        run: |
+          gcloud run deploy es-backend \
+            --image "$BACKEND_IMG" \
+            --region "${{ env.GCP_REGION }}" \
+            --ingress internal-and-cloud-load-balancing \
+            --no-allow-unauthenticated \
+            --service-account "${{ secrets.BACKEND_SA }}" \
+            --set-env-vars "GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}"
+      - name: Deploy frontend (Cloud Run, internal + IAP)
+        run: |
+          gcloud run deploy es-frontend \
+            --image "$FRONTEND_IMG" \
+            --region "${{ env.GCP_REGION }}" \
+            --ingress internal-and-cloud-load-balancing \
+            --no-allow-unauthenticated

@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    'Segoe UI', Roboto, sans-serif;
+  background-color: #f9fafb;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Emergent-style cream background for the marketing landing page. */
+body.landing-theme {
+  background-color: #f6f1e7;
+  color: #1a1a18;
+}
+
+/* Serif display utility. */
+.font-serif {
+  font-family: var(--font-serif), Georgia, ui-serif, serif;
+}
+
+::selection {
+  background-color: rgba(194, 85, 59, 0.28);
+  color: #1a1a18;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
