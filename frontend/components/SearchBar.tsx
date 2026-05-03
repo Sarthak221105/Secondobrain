@@ -21,7 +21,6 @@ export default function SearchBar({
 }: Props) {
   const [value, setValue] = useState(initialValue);
 
-  // Mirror externally provided values (e.g. suggested query chips).
   useEffect(() => {
     if (externalValue !== undefined) setValue(externalValue);
   }, [externalValue]);
@@ -34,21 +33,55 @@ export default function SearchBar({
   }
 
   return (
-    <form onSubmit={submit} className="w-full flex gap-2">
-      <input
-        type="search"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Ask anything about your company..."
-        className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-lg shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-        aria-label="Search query"
-      />
+    <form
+      onSubmit={submit}
+      className="group relative w-full flex flex-col sm:flex-row gap-3"
+    >
+      <div className="relative flex-1">
+        <span
+          aria-hidden
+          className="absolute left-5 top-1/2 -translate-y-1/2 text-ink-600 group-focus-within:text-rust transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+        </span>
+        <input
+          type="search"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Ask anything about your company…"
+          className="w-full rounded-full bg-white/80 backdrop-blur border border-black/10 pl-12 pr-5 py-3.5 text-[15px] text-ink-900 placeholder-ink-600/60 focus:border-rust focus:outline-none focus:ring-2 focus:ring-rust/20 transition-colors"
+          aria-label="Search query"
+        />
+      </div>
       <button
         type="submit"
         disabled={busy}
-        className="rounded-lg bg-brand px-6 py-3 text-white font-medium shadow hover:bg-brand-dark disabled:opacity-50"
+        className="inline-flex items-center justify-center gap-1.5 rounded-full bg-ink-950 text-white px-6 py-3.5 text-[15px] font-medium hover:bg-ink-800 transition-colors disabled:opacity-60"
       >
-        {busy ? 'Searching…' : 'Search'}
+        {busy ? (
+          <>
+            <span className="h-2 w-2 rounded-full bg-rust animate-pulse" />
+            Searching…
+          </>
+        ) : (
+          <>
+            Search
+            <span aria-hidden>→</span>
+          </>
+        )}
       </button>
     </form>
   );

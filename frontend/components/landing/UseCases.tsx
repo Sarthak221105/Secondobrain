@@ -89,7 +89,7 @@ export default function UseCases() {
             The product
           </p>
           <h2 className="mt-4 font-serif text-4xl sm:text-6xl text-ink-950 leading-[1.02] tracking-tight">
-            Twelve modules.{' '}
+            Nine modules.{' '}
             <span className="italic text-rust">One quiet system.</span>
           </h2>
           <p className="mt-6 text-ink-700 leading-relaxed max-w-2xl">

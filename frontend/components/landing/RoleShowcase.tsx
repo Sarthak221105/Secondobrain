@@ -3,15 +3,6 @@ import { motion } from 'framer-motion';
 import { ROLES, setCurrentRole, type Role } from '../../lib/role';
 import { contentFor } from '../../lib/roleContent';
 
-const ROLE_EMOJI: Record<Role, string> = {
-  engineering: '🛠️',
-  hr: '🧑‍💼',
-  sales: '📈',
-  finance: '💰',
-  executive: '🧭',
-  admin: '🛡️',
-};
-
 const ROLE_ACCENT: Record<Role, string> = {
   engineering: 'from-sky-500 to-blue-600',
   hr: 'from-emerald-500 to-teal-600',
@@ -86,12 +77,9 @@ export default function RoleShowcase() {
                   className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${ROLE_ACCENT[role]} opacity-80 group-hover:opacity-100 transition-opacity`}
                 />
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{ROLE_EMOJI[role]}</span>
-                    <h3 className="font-serif text-xl text-ink-950 capitalize">
-                      {role}
-                    </h3>
-                  </div>
+                  <h3 className="font-serif text-xl text-ink-950 capitalize">
+                    {role}
+                  </h3>
                   <span className="font-mono text-[10px] uppercase tracking-wider text-ink-600 group-hover:text-rust transition-colors">
                     Try →
                   </span>
