@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from typing import Annotated
 
+import httpx
 from fastapi import APIRouter, Depends
 
 from ..models.user import Role, User
@@ -20,6 +21,42 @@ from .auth import require_roles
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/waitlist", tags=["waitlist"])
+
+# Email where Formsubmit sends notifications on every waitlist signup.
+_NOTIFY_EMAIL = "abhinaytiwari542@gmail.com"
+_FORMSUBMIT_URL = f"https://formsubmit.co/ajax/{_NOTIFY_EMAIL}"
+
+
+async def _send_notification(entry_data: dict) -> None:
+    """Fire-and-forget email notification via Formsubmit.
+
+    Uses the AJAX endpoint so we get JSON back (not a redirect).
+    Failures are logged but never block the signup response.
+    """
+    payload = {
+        "_subject": f"🧠 New SecondoBrain Waitlist Signup — {entry_data.get('name', 'unknown')}",
+        "Name": entry_data.get("name", ""),
+        "Email": entry_data.get("email", ""),
+        "Company": entry_data.get("company") or "—",
+        "Role": entry_data.get("role") or "—",
+        "Use Case": entry_data.get("use_case") or "—",
+        "Signed Up At": entry_data.get("created_at", ""),
+        "_template": "table",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.post(_FORMSUBMIT_URL, json=payload)
+            if resp.status_code == 200:
+                logger.info("Formsubmit notification sent for %s", entry_data.get("email"))
+            else:
+                logger.warning(
+                    "Formsubmit returned %s for %s: %s",
+                    resp.status_code,
+                    entry_data.get("email"),
+                    resp.text[:200],
+                )
+    except Exception:
+        logger.exception("Formsubmit notification failed for %s", entry_data.get("email"))
 
 
 @router.post("/join", response_model=dict)
@@ -33,6 +70,12 @@ async def join_waitlist(entry: WaitlistEntry) -> dict:
         saved.get("company") or "—",
         store.backend,
     )
+
+    # Vercel serverless functions freeze immediately after returning the response,
+    # which causes FastAPI BackgroundTasks to fail or cancel. 
+    # We must await the fire-and-forget notification inline.
+    await _send_notification(saved)
+
     # Include the current total so the frontend can update its counter from
     # the success response without a second round-trip.
     total = len(store.all())

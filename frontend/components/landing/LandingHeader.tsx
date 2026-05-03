@@ -51,17 +51,17 @@ export default function LandingHeader() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-9 text-[15px] text-ink-900">
-          <a href="#features" className="hover:text-rust transition-colors">
-            Features
+          <a href="#insight" className="hover:text-rust transition-colors">
+            Insight
           </a>
-          <a href="#how" className="hover:text-rust transition-colors">
-            How it works
+          <a href="#system" className="hover:text-rust transition-colors">
+            System
           </a>
-          <a href="#use-cases" className="hover:text-rust transition-colors">
-            Use cases
+          <a href="#decision-layer" className="hover:text-rust transition-colors">
+            Decision Layer
           </a>
-          <a href="#faq" className="hover:text-rust transition-colors">
-            FAQ
+          <a href="#waitlist" className="hover:text-rust transition-colors">
+            Waitlist
           </a>
         </nav>
 
@@ -69,7 +69,7 @@ export default function LandingHeader() {
           href="#waitlist"
           className="inline-flex items-center gap-1.5 rounded-full bg-ink-950 text-white text-sm font-medium px-5 py-2.5 hover:bg-ink-800 transition-colors"
         >
-          Join the waitlist
+          Book a Demo
           <span aria-hidden>→</span>
         </a>
       </div>

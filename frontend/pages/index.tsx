@@ -2,13 +2,11 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import LandingHeader from '../components/landing/LandingHeader';
 import Hero from '../components/landing/Hero';
-import UseCases from '../components/landing/UseCases';
-import HowItWorks from '../components/landing/HowItWorks';
-import Flow from '../components/landing/Flow';
-import RoleShowcase from '../components/landing/RoleShowcase';
-import Features from '../components/landing/Features';
-import TechStack from '../components/landing/TechStack';
-import FAQ from '../components/landing/FAQ';
+import CoreInsight from '../components/landing/CoreInsight';
+import TheSystem from '../components/landing/TheSystem';
+import TheDifference from '../components/landing/TheDifference';
+import DecisionLayer from '../components/landing/DecisionLayer';
+import FinalShift from '../components/landing/FinalShift';
 import Waitlist from '../components/landing/Waitlist';
 import WaitlistCount from '../components/landing/WaitlistCount';
 
@@ -32,23 +30,21 @@ export default function Landing() {
   return (
     <>
       <Head>
-        <title>Secondo Brain — Your company's searchable memory</title>
+        <title>SecondoBrain — The Company Brain for AI</title>
         <meta
           name="description"
-          content="One AI workplace that remembers every policy, every decision, every meeting — and serves the answer to whoever is allowed to see it."
+          content="SecondoBrain builds the Company Brain — the system that structures knowledge, decisions, and workflows so AI can operate reliably."
         />
       </Head>
       <div className="min-h-screen bg-cream-50 text-ink-900">
         <LandingHeader />
         <main>
           <Hero />
-          <UseCases />
-          <HowItWorks />
-          <Flow />
-          <RoleShowcase />
-          <Features />
-          <TechStack />
-          <FAQ />
+          <CoreInsight />
+          <TheSystem />
+          <TheDifference />
+          <DecisionLayer />
+          <FinalShift />
 
           {/* Big social-proof count right before the signup form. */}
           <section className="relative py-20 bg-cream-50 text-center border-t border-black/5">
@@ -79,7 +75,7 @@ export default function Landing() {
   );
 }
 
-/** Cream-theme big counter used between FAQ and Waitlist. */
+/** Cream-theme big counter used between FinalShift and Waitlist. */
 function WaitlistCountLarge() {
   return (
     <WaitlistCount variant="badge" className="text-base sm:text-lg text-ink-700">

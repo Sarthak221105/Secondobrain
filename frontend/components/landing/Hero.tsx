@@ -54,18 +54,18 @@ export default function Hero() {
             className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/50 backdrop-blur px-3.5 py-1.5 text-xs text-ink-800"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-rust" />
-            Private beta — Testing phase
+            The Company Brain — now in private beta
           </motion.span>
 
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="mt-6 font-serif text-ink-950 leading-[1.02] tracking-tight text-6xl sm:text-7xl lg:text-[5.5rem]"
+            className="mt-6 font-serif text-ink-950 leading-[1.02] tracking-tight text-5xl sm:text-6xl lg:text-[4.5rem]"
           >
-            Your company's
+            AI can't run your company.
             <br />
-            <span className="italic text-rust">searchable memory.</span>
+            <span className="italic text-rust">Your company isn't built for AI.</span>
           </motion.h1>
 
           <motion.p
@@ -74,9 +74,18 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="mt-6 text-ink-700 text-lg leading-relaxed max-w-lg"
           >
-            One AI workplace that remembers every policy, every decision,
-            every meeting — and quietly serves the answer to whoever is
-            allowed to see it. Built for the way real teams actually work.
+            SecondoBrain builds the Company Brain — the system that structures
+            knowledge, decisions, and workflows so AI can operate reliably.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.28 }}
+            className="mt-4 text-ink-600 text-sm leading-relaxed max-w-lg"
+          >
+            Not a chatbot. Not automation. The missing layer between your
+            company and AI execution.
           </motion.p>
 
           <motion.form
@@ -100,7 +109,7 @@ export default function Hero() {
               disabled={busy || done}
               className="inline-flex items-center justify-center gap-1.5 rounded-full bg-ink-950 text-white px-6 py-3.5 text-[15px] font-medium hover:bg-ink-800 transition-colors disabled:opacity-60"
             >
-              {done ? "You're on the list ✓" : busy ? 'Submitting…' : 'Request early access'}
+              {done ? "You're on the list ✓" : busy ? 'Submitting…' : 'Book a Demo'}
             </button>
           </motion.form>
 
@@ -133,10 +142,10 @@ export default function Hero() {
         transition={{ duration: 0.7, delay: 0.1 }}
         className="relative max-w-7xl mx-auto px-5 sm:px-8 mt-20 grid grid-cols-2 sm:grid-cols-4 gap-0 border-y border-black/10 divide-x divide-black/10"
       >
-        <Stat big="4" label="data sources" caption="Drive · Slack · Gmail · Jira" />
-        <Stat big="6" label="role tiers" caption="Engineering → Executive → Admin" />
-        <Stat big="100%" label="audit coverage" caption="Every query, every view" />
-        <Stat big="0" label="leaks by design" caption="Permission filter is mandatory" />
+        <Stat big="1" label="system layer" caption="The Company Brain — one infrastructure" />
+        <Stat big="∞" label="knowledge sources" caption="Docs · Slack · Email · Meetings" />
+        <Stat big="0" label="blind executions" caption="Decision Layer ensures context first" />
+        <Stat big="100%" label="human control" caption="Escalate · Pause · Override — always" />
       </motion.div>
     </section>
   );
