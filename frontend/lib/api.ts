@@ -1,6 +1,6 @@
 import { getCurrentRole, isAuthEnabled } from './role';
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000';
+const BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://secondobrain.onrender.com';
 
 export type SearchResult = {
   doc_id: string;
