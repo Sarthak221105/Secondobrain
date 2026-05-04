@@ -1,9 +1,8 @@
-"""Waitlist storage — Firestore primary, JSON-file fallback.
+"""Waitlist storage — MongoDB primary, JSON-file fallback.
 
 The landing page's "Join the waitlist" form posts here. We try to write to
-the ``waitlist`` Firestore collection first; if Firestore credentials are
-missing or the call fails, we append to a local JSON file so testing-phase
-signups aren't lost.
+the ``waitlist`` MongoDB collection first; if MongoDB URI is missing or the
+call fails, we append to a local JSON file so testing-phase signups aren't lost.
 """
 
 from __future__ import annotations
@@ -40,67 +39,77 @@ class WaitlistStore:
     """Persist waitlist signups with graceful fallback."""
 
     def __init__(self, client=None) -> None:
-        """Try Firestore; fall back to on-disk JSON if not configured."""
+        """Try MongoDB; fall back to on-disk JSON if not configured."""
         settings = get_settings()
         self._client = client
-        self._collection = _COLLECTION
+        self._collection_name = _COLLECTION
         self._path = _LOCAL_PATH
         self._lock = threading.Lock()
+        
+        self._db = None
+        self._collection = None
 
-        if self._client is None:
+        if self._client is None and settings.mongodb_uri:
             try:
-                from google.cloud import firestore
-
-                self._client = firestore.Client(project=settings.gcp_project_id)
-                logger.info("WaitlistStore using Firestore collection=%s", self._collection)
+                from motor.motor_asyncio import AsyncIOMotorClient
+                from pymongo.errors import ConfigurationError
+                self._client = AsyncIOMotorClient(settings.mongodb_uri)
+                # Default database name if not specified in URI
+                try:
+                    db_name = self._client.get_database().name
+                except ConfigurationError:
+                    db_name = "enterprise-search"
+                self._db = self._client[db_name]
+                self._collection = self._db[self._collection_name]
+                logger.info("WaitlistStore using MongoDB collection=%s", self._collection_name)
             except Exception as exc:
                 logger.warning(
-                    "WaitlistStore falling back to JSON file %s (Firestore "
+                    "WaitlistStore falling back to JSON file %s (MongoDB "
                     "unavailable: %s). Signups will persist locally only.",
                     self._path,
                     exc,
                 )
                 self._client = None
+                self._db = None
+                self._collection = None
 
     @property
     def backend(self) -> str:
-        """Return ``"firestore"`` or ``"local"`` for diagnostics."""
-        return "firestore" if self._client is not None else "local"
+        """Return ``"mongodb"`` or ``"local"`` for diagnostics."""
+        return "mongodb" if self._client is not None else "local"
 
-    def add(self, entry: WaitlistEntry) -> dict:
+    async def add(self, entry: WaitlistEntry) -> dict:
         """Store a new signup. Returns the saved record."""
         record: dict[str, Any] = entry.model_dump()
         record["created_at"] = datetime.now(tz=timezone.utc).isoformat()
 
-        if self._client is not None:
+        if self._collection is not None:
             try:
-                _ref_tuple = self._client.collection(self._collection).add(record)
-                # firestore.add returns (timestamp, DocumentReference)
-                try:
-                    record["id"] = _ref_tuple[1].id
-                except Exception:
-                    record["id"] = None
+                result = await self._collection.insert_one(record)
+                record["id"] = str(result.inserted_id)
+                if "_id" in record:
+                    del record["_id"]
                 return record
             except Exception:
-                logger.exception("Firestore waitlist write failed; falling back to local file")
+                logger.exception("MongoDB waitlist write failed; falling back to local file")
 
         self._append_local(record)
         return record
 
-    def all(self) -> list[dict]:
+    async def all(self) -> list[dict]:
         """Return every signup in reverse-chronological order."""
-        if self._client is not None:
+        if self._collection is not None:
             try:
-                from google.cloud import firestore as _fs
-
-                docs = (
-                    self._client.collection(self._collection)
-                    .order_by("created_at", direction=_fs.Query.DESCENDING)
-                    .stream()
-                )
-                return [{"id": d.id, **d.to_dict()} for d in docs]
+                cursor = self._collection.find().sort("created_at", -1)
+                docs = await cursor.to_list(length=None)
+                
+                results = []
+                for d in docs:
+                    d_id = str(d.pop("_id", None))
+                    results.append({"id": d_id, **d})
+                return results
             except Exception:
-                logger.exception("Firestore waitlist read failed; returning local file")
+                logger.exception("MongoDB waitlist read failed; returning local file")
 
         return list(reversed(self._load_local()))
 

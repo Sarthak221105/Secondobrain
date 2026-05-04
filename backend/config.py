@@ -51,6 +51,9 @@ class Settings(BaseModel):
     elasticsearch_index: str = os.getenv("ELASTICSEARCH_INDEX", "enterprise-search")
     elasticsearch_api_key: str = os.getenv("ELASTICSEARCH_API_KEY", "")
 
+    # MongoDB
+    mongodb_uri: str = os.getenv("MONGODB_URI", "")
+
     # DLP.
     # DLP is **optional** in development. Set DLP_ENABLED=true in prod to
     # enforce the fail-closed scan pipeline. When disabled the indexer uses a

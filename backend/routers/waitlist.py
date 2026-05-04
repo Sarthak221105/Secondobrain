@@ -63,7 +63,7 @@ async def _send_notification(entry_data: dict) -> None:
 async def join_waitlist(entry: WaitlistEntry) -> dict:
     """Accept a signup from the landing page. No auth required."""
     store = get_waitlist_store()
-    saved = store.add(entry)
+    saved = await store.add(entry)
     logger.info(
         "waitlist signup: %s (%s) via %s",
         saved.get("email"),
@@ -78,7 +78,8 @@ async def join_waitlist(entry: WaitlistEntry) -> dict:
 
     # Include the current total so the frontend can update its counter from
     # the success response without a second round-trip.
-    total = len(store.all())
+    all_signups = await store.all()
+    total = len(all_signups)
     return {
         "ok": True,
         "backend": store.backend,
@@ -96,7 +97,8 @@ async def waitlist_stats() -> dict:
     ``displayed`` value gives marketing copy a stable number to anchor
     "Join 40+ others" while the real ``total`` is available for admins.
     """
-    total = len(get_waitlist_store().all())
+    all_signups = await get_waitlist_store().all()
+    total = len(all_signups)
     return {
         "total": total,
         "displayed": _display_total(total),
@@ -108,7 +110,7 @@ async def list_signups(
     _admin: Annotated[User, Depends(require_roles(Role.ADMIN))],
 ) -> list[dict]:
     """Admin-only — return every signup, newest first."""
-    return get_waitlist_store().all()
+    return await get_waitlist_store().all()
 
 
 def _display_total(total: int) -> int:
